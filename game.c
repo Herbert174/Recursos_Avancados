@@ -1,48 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "game.h"
+#include "mapa.h"
+#include "mapa.c"
 
-char** Mapa; // ** para declarar a matriz
-int linhas;
-int colunas;
+MAPA Mapa; //Instanciando uma struct
+POSICAO heroi;
 
-void liberaMapa(){
-    for(int i = 0; i < linhas; i++){
-            free(Mapa[i]);
-        }
-    free(Mapa);
+int acabou(){
+    return 0;
 }
 
-void alocaMapa(){
-    Mapa = malloc(sizeof(char*) * linhas); //Alocando para a matriz a memoria necessária para conter todos ponteiros
-                                           //presentes no mapa, que são a quantidade de linhas
-
-    for(int i = 0; i < linhas; i++){
-        Mapa[i] = malloc(sizeof(char) * (colunas + 1)); //Percorrendo cada linha alocamos o espaço de um char + 1
-                                                            //para cada coluna do mapa
-    }
-}
-
-void leMapa(){
-    FILE* f;
-    f = fopen("Mapa.txt", "r");
-
-    if(f == 0){
-        printf("Erro na leitura do mapa\n");
-        exit(1);
-    }
-
-    fscanf(f, "%d %d", &linhas, &colunas);
-    //printf("linhas %d colunas %d\n", linhas, colunas);
-
-    alocaMapa();
-
-    for(int i = 0; i < 5; i++){
-        fscanf(f, "%s", Mapa[i]); //Lê linha por linha e guarda na matriz Mapa
-    }
-
-    fclose(f);
+void move(char direcao){
+    //encontraposicaoPlayer(&Mapa, &heroi);
+    moveposicaoPlayer(&Mapa, &direcao, &heroi);
 }
 
 int main(){
@@ -50,7 +21,6 @@ int main(){
     //char Mapa[5][10+1]; //Matriz 5 x 10 o +1 é por causa da posição final que tem o /0 indicando que é o final
     //Mapa[0][0] = '|'; //Primeiro endereço matriz
     //Mapa[4][9] = '@'; //Ultimo endereço matriz
-
     //printf("%c %c", Mapa[0][0], Mapa[4][9]);
 
     //int* v = malloc(sizeof(int) * 50); //declarando uma variavel V cujo tamanho a ser alocado será definido
@@ -85,11 +55,16 @@ int main(){
 
     free(v);*/                    //Liberando a memoria alocada com o free e apontando a variavel
 
-    leMapa();
+    leMapa(&Mapa);
+    encontraposicaoPlayer(&Mapa, &heroi);
 
-    for(int i = 0; i < 5; i++){
-        printf("%s\n", Mapa[i]); //Imprime linha por linha as informações guardadas em Mapa
-    }
+    do{
+        imprimeMapa(&Mapa);
 
-    liberaMapa();
+        char comando;
+        scanf(" %c", &comando);
+        move(comando);
+    }while(!acabou());
+
+    liberaMapa(&Mapa);
 }
