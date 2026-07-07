@@ -30,7 +30,7 @@ void leMapa(MAPA* Mapa){
 
     alocaMapa(Mapa);
 
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < Mapa->linhas; i++){
         fscanf(f, "%s", Mapa->matriz[i]); //Lê linha por linha e guarda na matriz Mapa
     }
 
@@ -43,39 +43,99 @@ void imprimeMapa(MAPA* Mapa){
         }
 }
 
-int encontraposicaoPlayer(MAPA* Mapa, POSICAO* heroi){
-    for(int i = 0; i < Mapa->linhas; i++){
-        for(int j = 0; j < Mapa->colunas; j++){
-            if(Mapa->matriz[i][j] == '@'){
-                heroi->x = i;
-                heroi->y = j;
-                break;
-            }
-        }
+void copiaMapa(MAPA* destino, MAPA* origem){
+    destino->linhas = origem->linhas;
+    destino->colunas = origem->colunas;
+
+    alocaMapa(destino);
+    for(int i = 0; i < origem->linhas; i++){
+        strcpy(destino->matriz[i], origem->matriz[i]);//strcpy função que copia uma string de uma variavel a outra
+
+        //memcpy(&aniche, &mauricio, sizeof(CONTATO));//assim como o strcpy a memcpy copia porém não se limitando
+        //a apenas uma string e sim uma struct inteira, porem nesse caso é necessario passar o destino, origem
+        //e a quantidade de memoria necessaria, para isso usamos o sizeof e passamos a struct declarada
+
+        //memset(&marcelo, 0, sizeof(CONTATO));//uma boa pratica é limparmos a memoria das variaveis que
+        //queremos utilizar como struct, utilizando o memset, passando a struct, o valor 0 e o tamanho da
+        //struct declarada
     }
 }
 
+int encontraposicaoPlayer(MAPA* Mapa, POSICAO* heroi){
+    for(int i = 0; i < Mapa->linhas; i++){
+        for(int j = 0; j < Mapa->colunas; j++){
+            if(Mapa->matriz[i][j] == HEROI){ //HEROI atribuido pois é uma constante representando o caracter @
+                heroi->x = i;
+                heroi->y = j;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+int direcaoinvalida(char *direcao){
+    if(*direcao != ESQUERDA && *direcao != CIMA && *direcao != BAIXO && *direcao != DIREITA){
+        return 1; //return garante que a função termine ali e não continue mais
+    }else 
+        return 0;         
+}
+
+int posicaovalida(MAPA* Mapa, int proximox, int proximoy){
+    if(proximox >= Mapa->linhas)
+        return 0;
+
+    if(proximoy >= Mapa->colunas)
+        return 0;
+
+    if(Mapa->matriz[proximox][proximoy] == '|' || Mapa->matriz[proximox][proximoy] == '-')
+        return 0;
+
+    if(Mapa->matriz[proximox][proximoy] == 'F')
+        return 0;
+
+    return 1;
+}
+
+void movimentaFantasma(MAPA* Mapa, int origemx, int origemy, int destinox, int destinoy){
+    Mapa->matriz[destinox][destinoy] = FANTASMA;
+    Mapa->matriz[origemx][origemy] = VAZIO;
+}
+
+void movimentaPlayer(MAPA* Mapa, POSICAO* heroi, int proximox, int proximoy){
+    Mapa->matriz[proximox][proximoy] = HEROI;
+    Mapa->matriz[heroi->x][heroi->y] = VAZIO;
+    heroi->x = proximox;
+    heroi->y = proximoy;
+}
+
 void moveposicaoPlayer(MAPA* Mapa, char *direcao, POSICAO* heroi){
-    Mapa->matriz[heroi->x][heroi->y] = '.';
+    if(direcaoinvalida(direcao))
+        return;
+
+    int proximox = heroi->x;
+    int proximoy = heroi->y;
+
     switch((*direcao)){
-        case 'a':
-            Mapa->matriz[heroi->x][(heroi->y)-1] = '@';
-            heroi->y--;
+        case ESQUERDA:
+            proximoy--;
             break;
         
-        case 'w':
-            Mapa->matriz[(heroi->x)-1][heroi->y] = '@';
-            heroi->x--;
+        case CIMA:
+            proximox--;
             break;
 
-        case 's':
-            Mapa->matriz[(heroi->x)+1][heroi->y] = '@';
-            heroi->x++;
+        case BAIXO:
+            proximox++;
             break;
 
-        case 'd':
-            Mapa->matriz[heroi->x][(heroi->y)+1] = '@';
-            heroi->y++;
+        case DIREITA:
+            proximoy++;
             break;
     }
+
+    if(!posicaovalida(Mapa, proximox, proximoy))
+        return;
+
+    movimentaPlayer(Mapa, heroi, proximox, proximoy);
 }

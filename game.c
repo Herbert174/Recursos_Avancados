@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include "game.h"
 #include "mapa.h"
 #include "mapa.c"
@@ -7,8 +9,53 @@
 MAPA Mapa; //Instanciando uma struct
 POSICAO heroi;
 
-int acabou(){
+int direcaofantasma(int xatual, int yatual, int* xdestino, int* ydestino){
+    int opcoes[4][2] = {
+        {xatual, yatual+1},
+        {xatual+1, yatual},
+        {xatual, yatual-1},
+        {xatual-1, yatual}
+    };
+
+    srand(time(0));
+    int valido = 0;
+    for(int i = 0; i < 30; i++){
+        int posicao = rand() % 4;
+        if(posicaovalida(&Mapa, opcoes[posicao][0], opcoes[posicao][1])){
+            *xdestino = opcoes[posicao][0];
+            *ydestino = opcoes[posicao][1];
+            return 1;
+            //valido = 1;
+        }
+    }
     return 0;
+}
+
+void fantasmas(){
+    /*MAPA copia;
+    copiaMapa(&Mapa, &copia);*/
+    int fantasmas = 0;
+    for(int i = 0; i < Mapa.linhas; i++){
+        for(int j = 0; j < Mapa.colunas; j++){
+            if(Mapa.matriz[i][j] == FANTASMA){
+                int xdestino;
+                int ydestino;
+                int encontrou = direcaofantasma(i, j, &xdestino, &ydestino);
+                if(encontrou){
+                    movimentaFantasma(&Mapa, i, j, xdestino, ydestino);
+                    fantasmas++;
+                    if(fantasmas >= FANTASMAS_NO_MAPA)
+                        return;
+                }
+            }
+        }
+    }
+    //liberaMapa(&copia);
+}
+
+int acabou(){
+    int heroivivo = encontraposicaoPlayer(&Mapa, &heroi);
+    return !heroivivo;
 }
 
 void move(char direcao){
@@ -64,6 +111,7 @@ int main(){
         char comando;
         scanf(" %c", &comando);
         move(comando);
+        fantasmas();
     }while(!acabou());
 
     liberaMapa(&Mapa);
