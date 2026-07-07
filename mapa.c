@@ -88,10 +88,10 @@ int posicaovalida(MAPA* Mapa, int proximox, int proximoy){
     if(proximoy >= Mapa->colunas)
         return 0;
 
-    if(Mapa->matriz[proximox][proximoy] == '|' || Mapa->matriz[proximox][proximoy] == '-')
+    if(Mapa->matriz[proximox][proximoy] == PAREDE_VERTICAL || Mapa->matriz[proximox][proximoy] == PAREDE_HORIZONTAL)
         return 0;
 
-    if(Mapa->matriz[proximox][proximoy] == 'F')
+    if(Mapa->matriz[proximox][proximoy] == FANTASMA)
         return 0;
 
     return 1;
