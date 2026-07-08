@@ -8,6 +8,8 @@
 
 MAPA Mapa; //Instanciando uma struct
 POSICAO heroi;
+int Pilula = 0;
+int Fantasmas_no_Mapa = 2;
 
 int direcaofantasma(int xatual, int yatual, int* xdestino, int* ydestino){
     int opcoes[4][2] = {
@@ -19,7 +21,7 @@ int direcaofantasma(int xatual, int yatual, int* xdestino, int* ydestino){
 
     srand(time(0));
     int valido = 0;
-    for(int i = 0; i < 30; i++){
+    for(int i = 0; i < 10; i++){
         int posicao = rand() % 4;
         if(posicaovalida(&Mapa, opcoes[posicao][0], opcoes[posicao][1])){
             *xdestino = opcoes[posicao][0];
@@ -34,7 +36,7 @@ int direcaofantasma(int xatual, int yatual, int* xdestino, int* ydestino){
 void fantasmas(){
     /*MAPA copia;
     copiaMapa(&Mapa, &copia);*/
-    int fantasmas = 0;
+    int fantasmas = 1;
     for(int i = 0; i < Mapa.linhas; i++){
         for(int j = 0; j < Mapa.colunas; j++){
             if(Mapa.matriz[i][j] == FANTASMA){
@@ -44,7 +46,7 @@ void fantasmas(){
                 if(encontrou){
                     movimentaFantasma(&Mapa, i, j, xdestino, ydestino);
                     fantasmas++;
-                    if(fantasmas >= FANTASMAS_NO_MAPA)
+                    if(fantasmas > Fantasmas_no_Mapa)
                         return;
                 }
             }
@@ -60,11 +62,32 @@ int acabou(){
 
 void move(char direcao){
     //encontraposicaoPlayer(&Mapa, &heroi);
-    moveposicaoPlayer(&Mapa, &direcao, &heroi);
+    moveposicaoPlayer(&Mapa, &direcao, &heroi, &Pilula);
+}
+
+void explodepilula(){
+    if(!Pilula)
+        return;
+    explosaopilula(heroi.x, heroi.y, 0, 1, 3);
+    explosaopilula(heroi.x, heroi.y, 0, -1, 3);
+    explosaopilula(heroi.x, heroi.y, 1, 0, 3);
+    explosaopilula(heroi.x, heroi.y, -1, 0, 3);
+
+    Pilula = 0;
+}
+
+void explosaopilula(int x, int y, int direcaox, int direcaoy, int qntd){
+    int novox = x + direcaox;
+    int novoy = y + direcaoy;
+    if(!posicaovalidaexplosao(&Mapa, novox, novoy))
+        return;
+    if(qntd == 0)
+        return;
+    Mapa.matriz[novox][novoy] = VAZIO;
+    explosaopilula(novox, novoy, direcaox, direcaoy, qntd-1);//Função recursiva é uma função que chama ela mesma       
 }
 
 int main(){
-    
     //char Mapa[5][10+1]; //Matriz 5 x 10 o +1 é por causa da posição final que tem o /0 indicando que é o final
     //Mapa[0][0] = '|'; //Primeiro endereço matriz
     //Mapa[4][9] = '@'; //Ultimo endereço matriz
@@ -106,11 +129,15 @@ int main(){
     encontraposicaoPlayer(&Mapa, &heroi);
 
     do{
+        printf("Tem pilula: %s\n", (Pilula ? "SIM" : "NAO"));
         imprimeMapa(&Mapa);
 
         char comando;
         scanf(" %c", &comando);
         move(comando);
+        if(comando == BOMBA)
+            explodepilula();
+
         fantasmas();
     }while(!acabou());
 

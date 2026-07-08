@@ -1,3 +1,5 @@
+extern int Fantasmas_no_Mapa;
+
 void liberaMapa(MAPA* Mapa){
     for(int i = 0; i < (*Mapa).linhas; i++){  //(*Mapa).linhas ou Mapa->linhas ambos funcionam para acessar o valor
                                               //da struct de um ponteiro
@@ -97,6 +99,22 @@ int posicaovalida(MAPA* Mapa, int proximox, int proximoy){
     return 1;
 }
 
+int posicaovalidaexplosao(MAPA* Mapa, int alcancex, int alcancey){
+    if(alcancex >= Mapa->linhas)
+        return 0;
+
+    if(alcancey >= Mapa->colunas)
+        return 0;
+
+    if(Mapa->matriz[alcancex][alcancey] == PAREDE_VERTICAL || Mapa->matriz[alcancex][alcancey] == PAREDE_HORIZONTAL)
+        return 0;
+
+    if(Mapa->matriz[alcancex][alcancey] == FANTASMA)
+        Fantasmas_no_Mapa--;
+
+    return 1;
+}
+
 void movimentaFantasma(MAPA* Mapa, int origemx, int origemy, int destinox, int destinoy){
     Mapa->matriz[destinox][destinoy] = FANTASMA;
     Mapa->matriz[origemx][origemy] = VAZIO;
@@ -109,7 +127,7 @@ void movimentaPlayer(MAPA* Mapa, POSICAO* heroi, int proximox, int proximoy){
     heroi->y = proximoy;
 }
 
-void moveposicaoPlayer(MAPA* Mapa, char *direcao, POSICAO* heroi){
+void moveposicaoPlayer(MAPA* Mapa, char *direcao, POSICAO* heroi, int *Pilula){
     if(direcaoinvalida(direcao))
         return;
 
@@ -136,6 +154,9 @@ void moveposicaoPlayer(MAPA* Mapa, char *direcao, POSICAO* heroi){
 
     if(!posicaovalida(Mapa, proximox, proximoy))
         return;
+
+    if(Mapa->matriz[proximox][proximoy] == PILULA)
+        *Pilula = 1;
 
     movimentaPlayer(Mapa, heroi, proximox, proximoy);
 }
