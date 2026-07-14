@@ -39,12 +39,6 @@ void leMapa(MAPA* Mapa){
     fclose(f);
 }
 
-void imprimeMapa(MAPA* Mapa){
-    for(int i = 0; i < 5; i++){
-            printf("%s\n", Mapa->matriz[i]); //Imprime linha por linha as informações guardadas em Mapa
-        }
-}
-
 void copiaMapa(MAPA* destino, MAPA* origem){
     destino->linhas = origem->linhas;
     destino->colunas = origem->colunas;

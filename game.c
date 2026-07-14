@@ -5,6 +5,8 @@
 #include "game.h"
 #include "mapa.h"
 #include "mapa.c"
+#include "ui.h"
+#include "ui.c"
 
 MAPA Mapa; //Instanciando uma struct
 POSICAO heroi;
